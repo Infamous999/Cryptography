@@ -1,106 +1,61 @@
+def generate_random_sequence(a, c, m, x0):
+    x = x0
+    while True:
+        x = (a * x + c) % m
+        yield x
 
-import base64
+def find_period_length(a, c, m, x0):
+    sequence = generate_random_sequence(a, c, m, x0)
+    x = next(sequence)
+    period_start = x
+    period_length = 1
+    while x != period_start or period_length == 1:
+        x = next(sequence)
+        period_length += 1
+    return period_length * m.bit_length()  # in bits
 
+def count_even_odd_bytes(a, c, m, x0):
+    sequence = generate_random_sequence(a, c, m, x0)
+    x = next(sequence)
+    period_start = x
+    period_length = 1
+    even_count = 0
+    odd_count = 0
+    while x != period_start or period_length == 1:
+        x = next(sequence)
+        period_length += 1
+        byte = x.to_bytes(1, byteorder='big')
+        if byte[0] % 2 == 0:
+            even_count += 1
+        else:
+            odd_count += 1
+    return even_count, odd_count
 
-def Encrypt(KEYa, KEYb, encrypt):  # функция шифровки
+def count_zeros_ones_bits(a, c, m, x0):
+    sequence = generate_random_sequence(a, c, m, x0)
+    x = next(sequence)
+    period_start = x
+    period_length = 1
+    zeros_count = 0
+    ones_count = 0
+    while x != period_start or period_length == 1:
+        x = next(sequence)
+        period_length += 1
+        bits = bin(x)[2:].zfill(m.bit_length())
+        for bit in bits:
+            if bit == '0':
+                zeros_count += 1
+            else:
+                ones_count += 1
+    return zeros_count, ones_count
 
-    encrypted = ""
+a = 89
+c = 87
+m = 193
+x0 = 17
 
-    for letter in encrypt:
-        M = int(ord(letter))  # порядок символа нахожу при помощи команды ord
-        # Возвращает для указанного Юникод-символа целое, представляющее его позицию кода.
-        encryptedLetter = (KEYa * M + KEYb) % 256  # шифрование кода символа
-        encrypted = encrypted + chr(encryptedLetter)  # преобразование нового кода в символ командрой chr
-
-    return encrypted
-
-
-def getModularMultiplicativeInverse(a, n):  # где a - число взаимно простое с n,
-    for x in range(2, n):
-        if (a * x) % n == 1:
-            return int(x)
-
-
-def Decrypt(KEYa, KEYb, decrypt):  # функция дешифрования
-    decrypted = ""
-    for letter in decrypt:
-        C = int(ord(letter))
-
-        n = int(256)
-        decryptedLetter = (getModularMultiplicativeInverse(KEYa, n) * (
-                    C - KEYb)) % 256  # дешифрование кода символа по алгоритму
-
-        decrypted = decrypted + chr(decryptedLetter)
-
-    return decrypted
-
-
-print(8 * "*", "Вариант 8, ключ 19 , 56 . словарь 256", 8 * "*", "\n")
-path = input("enter the name of the file - ")
-
-file = open(path)
-if '.txt' in path:
-    encryptFile = open(path, mode="rt", encoding="utf8")  # СЮДА МОЖНО ВВЕСТИ ТЕКСТ ДЛЯ ШИФРОВКИ\ДЕШИФРОВКИ
-    encrypt = encryptFile.read()  # считывание файла с исходным текстом
-    print("\nText to encrypt is: ' ", encrypt, "'", "\n")  # вывод текста для проверки
-    encrypted = Encrypt(19, 56, encrypt)  # шифровка
-    Result = Decrypt(19, 56, encrypted)  # дешифровка для проверки
-
-    my_fileEC = open("ResultFileENCRYPTED.txt", "w+", encoding='utf-8')  # результат шифровки в отдельный файл
-    my_fileEC.write(encrypted)
-    my_fileEC.close()
-
-    my_fileDEC = open("ResultFileDECRYPTED.txt", "w+", encoding='utf-8')  # результат дешифровки в отдельный файл
-    my_fileDEC.write(Result)
-    my_fileDEC.close()
-
-    print("progtamm completed, result saved in files 'ResultFileENCRYPTED.txt' + 'ResultFileDECRYPTED.txt' ")
-    exit = input()
-
-elif '.jpg' in path:
-
-    with open(path, 'rb') as f:
-        res = base64.b64encode(f.read())
-
-    res = res.decode('utf-8')
-
-    encrypted = Encrypt(19, 56, res)  # шифровка
-
-    my_fileEC = open("JPGENCRYPTED.txt", "w+", encoding='utf-8')  # результат шифровки в отдельный файл
-    my_fileEC.write(encrypted)
-    my_fileEC.close()
-
-    Result = Decrypt(19, 56, encrypted)  # дешифровка для проверки
-
-    img = base64.b64decode(Result)
-    file = open('JPGRESULT.jpg', 'wb')
-    file.write(img)
-    file.close()
-
-    print("progtamm completed, result saved in files 'JPGENCRYPTED.txt' + 'JPGRESULT.jpg' ")
-    exit = input()
-
-
-
-elif '.png' in path:
-
-    with open(path, 'rb') as f:
-        res = base64.b64encode(f.read())
-
-    res = res.decode('utf-8')
-
-    encrypted = Encrypt(19, 56, res)  # шифровка
-
-    my_fileEC = open("1PNGENCRYPTED.txt", "w+", encoding='utf-8')  # результат шифровки в отдельный файл
-    my_fileEC.write(encrypted)
-    my_fileEC.close()
-
-    Result = Decrypt(19, 56, encrypted)  # дешифровка для проверки
-
-    img = base64.b64decode(Result)
-    file = open('1PNGRESULT.png', 'wb')
-    file.write(img)
-    file.close()
-
-    print("progtamm completed, result saved in files 'PNGENCRYPTED.txt' + '1PNGRESULT.png' ")
-    exit = input()
+print(f"Period length in bits: {find_period_length(a, c, m, x0)}")
+even_count, odd_count = count_even_odd_bytes(a, c, m, x0)
+print(f"Even bytes count: {even_count},\n odd bytes count: {odd_count}")
+zeros_count, ones_count = count_zeros_ones_bits(a, c, m, x0)
+print(f"Zeros bits count: {zeros_count},\n ones bits count: {ones_count}")
